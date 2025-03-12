@@ -1,1 +1,9 @@
-aiogram
+[tool.poetry]
+name = "tg-audio-bot"
+version = "0.1.0"
+description = ""
+authors = ["Vive <youremail@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+aiogram = "^2.25"
