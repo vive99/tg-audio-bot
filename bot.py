@@ -1,25 +1,25 @@
-import os
+from flask import Flask
+import threading
 from aiogram import Bot, Dispatcher, types, executor
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-from aiohttp import web
 
-API_TOKEN = '7963741763:AAG5cCO-gLJbWOhfOMTR-nNA_kKkVrMWqSY'  # Заменить на свой токен
-CHANNEL_ID = '@Mus.eQ 🎵'  # Заменить на свой канал
+API_TOKEN = '7963741763:AAG5cCO-gLJbWOhfOMTR-nNA_kKkVrMWqSY'  # Твой API токен
+CHANNEL_ID = '@Mus.eQ 🎵'  # Твой канал
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
-# Получаем порт из переменной окружения
-PORT = int(os.environ.get("PORT", 8080))  # Порт 8080 по умолчанию
+app = Flask(__name__)
 
-# Временное хранилище для картинок
-user_images = {}
+@app.route('/')
+def index():
+    return 'Bot is running'
 
-# Кнопки для взаимодействия
-keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-button_skip = KeyboardButton("Пропустить")
-button_copy_title = KeyboardButton("Скопировать название аудио в описание поста")
-keyboard.add(button_skip, button_copy_title)
+def run_flask():
+    app.run(host='0.0.0.0', port=8080)
+
+# Запуск Flask сервера в отдельном потоке
+flask_thread = threading.Thread(target=run_flask)
+flask_thread.start()
 
 # Обработчик фото
 @dp.message_handler(content_types=types.ContentType.PHOTO)
