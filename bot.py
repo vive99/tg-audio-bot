@@ -78,5 +78,4 @@ async def handle_description(message: types.Message):
     del user_images[user_id]
 
 if __name__ == '__main__':
-    app = web.Application()
-    web.run_app(app, port=PORT)
+    executor.start_polling(dp, skip_updates=True)
