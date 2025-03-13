@@ -1,24 +1,33 @@
-from flask import Flask, request, jsonify
+import os
+import asyncio
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import InputMediaPhoto, InlineKeyboardButton, InlineKeyboardMarkup
-import os
-import json
-import asyncio
+from aiogram.utils import executor
+from flask import Flask
 
-API_TOKEN = os.getenv('7963741763:AAG5cCO-gLJbWOhfOMTR-nNA_kKkVrMWqSY')
+# Вставляю твой API Token и ID канала
+API_TOKEN = os.getenv('7963741763:AAG5cCO-gLJbWOhfOMTR-nNA_kKkVrMWqSY')  # Используем переменные окружения для безопасности
 CHANNEL_ID = '@mus_eq'
-
-app = Flask(__name__)
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
+# Flask приложение
+app = Flask(__name__)
+
+# Временное хранилище для картинок, аудио и состояния
 user_data = {}
 
+# Кнопки для ввода описания
 def get_description_keyboard(file_name):
     keyboard = InlineKeyboardMarkup()
+    # Кнопка для копирования названия аудиофайла в описание
     keyboard.add(InlineKeyboardButton(text="Скопировать название в описание", callback_data=f"copy_{file_name}"))
     return keyboard
+
+@app.route('/')
+def hello_world():
+    return 'Bot is running'
 
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message):
@@ -43,6 +52,7 @@ async def handle_audio(message: types.Message):
     user_data[user_id]['audio'] = (file_id_audio, file_name, caption)
 
     if 'photo' in user_data[user_id]:
+        # Отправляем клавиатуру для выбора описания
         keyboard = get_description_keyboard(file_name)
         await message.reply("Теперь выбери описание для аудиофайла или добавь его ниже.", reply_markup=keyboard)
     else:
@@ -55,8 +65,9 @@ async def process_callback_copy(callback_query: types.CallbackQuery):
 
     if user_id in user_data and 'photo' in user_data[user_id] and 'audio' in user_data[user_id]:
         file_id_audio, original_file_name, caption = user_data[user_id]['audio']
-        new_caption = f"{file_name} - {original_file_name}"
+        new_caption = f"{file_name} - {original_file_name}"  # Формируем новое описание
 
+        # Отправляем сообщение с аудио и картинкой
         await bot.send_media_group(
             CHANNEL_ID,
             [
@@ -65,6 +76,7 @@ async def process_callback_copy(callback_query: types.CallbackQuery):
             ]
         )
 
+        # Очищаем временные данные
         del user_data[user_id]
         await callback_query.answer(f"Описание для {file_name} добавлено: {new_caption}")
     else:
@@ -78,6 +90,7 @@ async def handle_text(message: types.Message):
         user_data[user_id]['audio'] = (user_data[user_id]['audio'][0], user_data[user_id]['audio'][1], message.text)
         file_id_audio, original_file_name, caption = user_data[user_id]['audio']
 
+        # Публикуем пост с текстом, если все 3 части готовы
         await bot.send_media_group(
             CHANNEL_ID,
             [
@@ -86,20 +99,20 @@ async def handle_text(message: types.Message):
             ]
         )
 
+        # Очищаем временные данные
         del user_data[user_id]
         await message.reply(f"Публикация успешна с описанием: {caption}")
     else:
         await message.reply("Ошибка! Для публикации нужны и картинка, и аудио.")
 
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    json_str = request.get_data().decode('UTF-8')
-    update = types.Update(**json.loads(json_str))
-    dp.process_update(update)
-    return jsonify({'status': 'ok'}), 200
-
+# Используем Flask для запуска веб-сервиса
 if __name__ == '__main__':
+    # Получаем PORT из переменной окружения, если она есть
+    port = int(os.environ.get('PORT', 5000))
+    
     # Используем asyncio для запуска бота
     loop = asyncio.get_event_loop()
     loop.create_task(dp.start_polling())
-    app.run(host='0.0.0.0', port=5000)
+    
+    # Запускаем Flask-приложение на порту, назначенном Render
+    app.run(host='0.0.0.0', port=port)
