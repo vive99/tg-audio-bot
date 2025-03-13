@@ -42,7 +42,7 @@ def send_post(update, context):
         context.bot.send_message(chat_id=update.effective_chat.id, text="Не все данные получены. Пожалуйста, начните сначала с /start.")
 
 def main():
-    updater = Updater(TOKEN, use_context=True)
+    updater = Updater(TOKEN)
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler("start", start))
