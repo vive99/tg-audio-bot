@@ -1,11 +1,22 @@
+import logging
+import os
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import InputMediaPhoto, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils import executor
+from flask import Flask
+import asyncio
+
+# Устанавливаем логирование
+logging.basicConfig(level=logging.INFO)
+
+# Создаем Flask приложение для прослушивания порта
+app = Flask(__name__)
 
 # Вставляю твой API Token и ID канала
 API_TOKEN = '7963741763:AAG5cCO-gLJbWOhfOMTR-nNA_kKkVrMWqSY'
 CHANNEL_ID = '@Mus.eQ'
 
+# Инициализируем бот и диспетчер
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
@@ -18,6 +29,11 @@ def get_description_keyboard(file_name):
     # Кнопка для копирования названия аудиофайла в описание
     keyboard.add(InlineKeyboardButton(text="Скопировать название в описание", callback_data=f"copy_{file_name}"))
     return keyboard
+
+# Flask маршрут для прослушивания порта
+@app.route('/')
+def webhook():
+    return 'Bot is running!'
 
 @dp.message_handler(commands=['start'])
 async def start(message: types.Message):
@@ -95,8 +111,11 @@ async def handle_text(message: types.Message):
     else:
         await message.reply("Ошибка! Для публикации нужны и картинка, и аудио.")
 
+# Убираем ошибки если не передали порты
 if __name__ == '__main__':
     try:
-        executor.start_polling(dp, skip_updates=True)
+        loop = asyncio.get_event_loop()
+        loop.create_task(executor.start_polling(dp, skip_updates=True))
+        app.run(host="0.0.0.0", port=int(os.getenv("PORT", 8080)))
     except Exception as e:
         print(f"Error while starting bot: {e}")
