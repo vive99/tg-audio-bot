@@ -1,5 +1,9 @@
 import telegram
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import filters
+# ...
+dp.add_handler(MessageHandler(filters.PHOTO, image))
+dp.add_handler(MessageHandler(filters.AUDIO, audio))
+dp.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, caption))
 import os
 
 TOKEN = '7963741763:AAG5cCO-gLJbWOhfOMTR-nNA_kKkVrMWqSY'
