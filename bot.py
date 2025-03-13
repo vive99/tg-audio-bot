@@ -1,7 +1,7 @@
 import os
 import asyncio
 import logging
-from aiogram import Bot, Dispatcher, types
+from aiogram print(aiogram.__version__) import Bot, Dispatcher, types
 from aiogram.types import InputMediaPhoto, InlineKeyboardButton, InlineKeyboardMarkup
 from flask import Flask
 
