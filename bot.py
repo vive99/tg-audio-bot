@@ -1,61 +1,69 @@
+import os
 from aiogram import Bot, Dispatcher, types, executor
 
-API_TOKEN = '7963741763:AAG5cCO-gLJbWOhfOMTR-nNA_kKkVrMWqSY'
-CHANNEL_ID = '@Mus.eQ 🎵'  # твой канал
+API_TOKEN = os.getenv("API_TOKEN")  # Из переменных окружения
+CHANNEL_ID = os.getenv("CHANNEL_ID")  # Из переменных окружения
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
-# Временное хранилище для картинок
-user_images = {}
+# Временное хранилище для картинок и аудио
+user_data = {}
 
 @dp.message_handler(content_types=types.ContentType.PHOTO)
 async def handle_photo(message: types.Message):
     file_id = message.photo[-1].file_id
-    user_images[message.from_user.id] = file_id
+    user_data[message.from_user.id] = {'photo': file_id}
     await message.reply("Картинка получена. Теперь отправь аудиофайл.")
 
 @dp.message_handler(content_types=types.ContentType.AUDIO)
 async def handle_audio(message: types.Message):
     user_id = message.from_user.id
     file_id_audio = message.audio.file_id
-    caption = message.caption if message.caption else ""
 
-    # Предложение пользователю изменить название
-    await message.reply("Введите описание для аудиофайла или отправьте 'пропустить', чтобы использовать стандартное описание.")
+    if user_id in user_data and 'photo' in user_data[user_id]:
+        user_data[user_id]['audio'] = file_id_audio
+        user_data[user_id]['file_name'] = message.audio.file_name
 
-    # Ждем описание или пропуск
-    @dp.message_handler(lambda msg: msg.text.lower() != 'пропустить')
-    async def rename_audio(msg: types.Message):
-        new_caption = msg.text
-        if user_id in user_images:
-            file_id_image = user_images[user_id]
-            media = [
-                types.InputMediaPhoto(media=file_id_image),
-                types.InputMediaAudio(media=file_id_audio, caption=new_caption)
-            ]
-            await bot.send_media_group(CHANNEL_ID, media)
-            await msg.reply("Пост с изображением и аудио опубликован!")
-            del user_images[user_id]
-        else:
-            await bot.send_audio(CHANNEL_ID, file_id_audio, caption=new_caption)
-            await msg.reply("Аудио без картинки опубликовано!")
-        # После публикации ждем следующий ввод
-        del user_images[user_id]
-        return await dp.message_handler()  # Отменяем текущий хендлер
+        keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        keyboard.add("Пропустить", "Скопировать название аудио файла в описание поста")
+        await message.reply("Хочешь добавить описание?", reply_markup=keyboard)
+    else:
+        await message.reply("Сначала отправь картинку!")
 
-    # Если "пропустить"
-    @dp.message_handler(lambda msg: msg.text.lower() == 'пропустить')
-    async def skip_caption(msg: types.Message):
-        if user_id in user_images:
-            file_id_image = user_images[user_id]
-            media = [
-                types.InputMediaPhoto(media=file_id_image),
-                types.InputMediaAudio(media=file_id_audio)
-            ]
-            await bot.send_media_group(CHANNEL_ID, media)
-            await msg.reply("Пост с изображением и аудио опубликован без изменения описания!")
-            del user_images[user_id]
+@dp.message_handler(lambda message: message.text in ["Пропустить", "Скопировать название аудио файла в описание поста"])
+async def handle_description_choice(message: types.Message):
+    user_id = message.from_user.id
+    data = user_data.get(user_id)
 
-if __name__ == '__main__':
+    if not data:
+        await message.reply("Сначала отправь картинку и аудиофайл.")
+        return
+
+    if message.text == "Скопировать название аудио файла в описание поста":
+        description = data['file_name']
+        await post_to_channel(data['photo'], data['audio'], description)
+    else:
+        await post_to_channel(data['photo'], data['audio'], "")
+
+    await message.reply("Пост опубликован!", reply_markup=types.ReplyKeyboardRemove())
+    del user_data[user_id]
+
+@dp.message_handler()
+async def handle_custom_description(message: types.Message):
+    user_id = message.from_user.id
+    data = user_data.get(user_id)
+
+    if data:
+        await post_to_channel(data['photo'], data['audio'], message.text)
+        await message.reply("Пост опубликован с описанием!", reply_markup=types.ReplyKeyboardRemove())
+        del user_data[user_id]
+    else:
+        await message.reply("Сначала отправь картинку и аудио!")
+
+async def post_to_channel(photo_id, audio_id, caption):
+    await bot.send_photo(CHANNEL_ID, photo_id, caption=caption)
+    await bot.send_audio(CHANNEL_ID, audio_id)
+
+if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
