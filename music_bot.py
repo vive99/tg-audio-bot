@@ -1,9 +1,5 @@
 import telegram
-from telegram import filters
-# ...
-dp.add_handler(MessageHandler(filters.PHOTO, image))
-dp.add_handler(MessageHandler(filters.AUDIO, audio))
-dp.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, caption))
+from telegram.ext import Updater, CommandHandler, MessageHandler, filters
 import os
 
 TOKEN = '7963741763:AAG5cCO-gLJbWOhfOMTR-nNA_kKkVrMWqSY'
@@ -50,9 +46,9 @@ def main():
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(MessageHandler(Filters.photo, image))
-    dp.add_handler(MessageHandler(Filters.audio, audio))
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, caption))
+    dp.add_handler(MessageHandler(filters.PHOTO, image))
+    dp.add_handler(MessageHandler(filters.AUDIO, audio))
+    dp.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, caption))
 
     updater.start_polling()
     updater.idle()
