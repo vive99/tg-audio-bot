@@ -1,8 +1,8 @@
 import os
 import asyncio
+import logging
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import InputMediaPhoto, InlineKeyboardButton, InlineKeyboardMarkup
-from aiogram.utils import logging
 from flask import Flask
 
 # Вставляю твой API Token и ID канала
