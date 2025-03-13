@@ -2,7 +2,7 @@ import os
 import asyncio
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import InputMediaPhoto, InlineKeyboardButton, InlineKeyboardMarkup
-from aiogram.utils import executor
+from aiogram.utils import logging
 from flask import Flask
 
 # Вставляю твой API Token и ID канала
@@ -109,10 +109,6 @@ async def handle_text(message: types.Message):
 if __name__ == '__main__':
     # Получаем PORT из переменной окружения, если она есть
     port = int(os.environ.get('PORT', 5000))
-    
-    # Используем asyncio для запуска бота
-    loop = asyncio.get_event_loop()
-    loop.create_task(dp.start_polling())
     
     # Запускаем Flask-приложение на порту, назначенном Render
     app.run(host='0.0.0.0', port=port)
