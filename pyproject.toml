@@ -1,14 +1,13 @@
 [tool.poetry]
-name = "music_bot"
+name = "music-publisher-bot"
 version = "0.1.0"
-description = "Bot to send audio with images to Telegram channel"
-authors = ["Your Name <you@example.com>"]
-license = "MIT"
+description = "Telegram бот для публикации аудио с картинкой"
+authors = ["Твое Имя <email@example.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-aiogram = "^2.24"  # Убедись, что версия совпадает с нужной
+python = "^3.10"
+aiogram = "^2.25.1"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
