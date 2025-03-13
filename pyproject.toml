@@ -1,13 +1,15 @@
 [tool.poetry]
-name = "audio-bot"
+name = "telegram-bot"
 version = "0.1.0"
-description = "Telegram bot for posting audio and image to channel"
+description = ""
 authors = ["Vive <vitocorocovo@gmail.com>"]
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-aiogram = "^2.25"
+aiogram = "^2.23"  # Библиотека для Telegram бота
+python-dotenv = "^0.21.0"  # Для загрузки переменных окружения
 
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
