@@ -1,17 +1,21 @@
+import os
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import InputMediaPhoto, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils import executor
-from flask import Flask
+from flask import Flask, request
 
 # Вставляю твой API Token и ID канала
 API_TOKEN = '7963741763:AAG5cCO-gLJbWOhfOMTR-nNA_kKkVrMWqSY'
-CHANNEL_ID = 'mus_eq'  # Правильный ID канала без @
+CHANNEL_ID = '@mus_eq'
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
 # Временное хранилище для картинок, аудио и состояния
 user_data = {}
+
+# Получаем домен из переменной окружения RENDER_EXTERNAL_URL
+DOMAIN = os.getenv('RENDER_EXTERNAL_URL')
 
 # Кнопки для ввода описания
 def get_description_keyboard(file_name):
@@ -96,15 +100,24 @@ async def handle_text(message: types.Message):
     else:
         await message.reply("Ошибка! Для публикации нужны и картинка, и аудио.")
 
-# Flask application to keep the bot alive
+# Flask настройка для webhook
 app = Flask(__name__)
 
-@app.route('/')
-def home():
-    return "Bot is running!"
+@app.route('/webhook', methods=['POST'])
+def webhook():
+    json_str = request.get_data().decode('UTF-8')
+    update = types.Update.parse_raw(json_str)
+    bot.process_new_updates([update])
+    return 'OK'
 
 if __name__ == '__main__':
-    try:
-        executor.start_polling(dp, skip_updates=True)
-    except Exception as e:
-        print(f"Error while starting bot: {e}")
+    # Убедимся, что переменная окружения RENDER_EXTERNAL_URL существует
+    if DOMAIN is None:
+        raise ValueError("RENDER_EXTERNAL_URL не установлена в окружении!")
+
+    # Настройка webhook
+    webhook_url = f"{DOMAIN}/webhook"
+    bot.set_webhook(webhook_url)
+    
+    # Запуск Flask приложения
+    app.run(host='0.0.0.0', port=5000)
