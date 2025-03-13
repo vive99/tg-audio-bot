@@ -1,14 +1,17 @@
 [tool.poetry]
-name = "music-post-bot"
+name = "bot_project"
 version = "0.1.0"
-description = "Telegram bot to post music with image and description"
+description = "Telegram bot with aiogram and Flask"
 authors = ["Vive <vitocorocovo@gmail.com>"]
-license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-aiogram = "^2.21"
+aiogram = "^2.24"
+Flask = "^2.2.3"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.0"
 
 [build-system]
-requires = ["poetry>=1.0"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
