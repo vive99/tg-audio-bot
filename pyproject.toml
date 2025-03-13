@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "audio-photo-bot"
+name = "audio-bot"
 version = "0.1.0"
-description = "Telegram bot for posting audio + photo as a post"
+description = "Telegram bot for posting audio and image to channel"
 authors = ["Vive <vitocorocovo@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-aiogram = "^2.25.1"
+aiogram = "^2.25"
 
 [build-system]
 requires = ["poetry-core"]
